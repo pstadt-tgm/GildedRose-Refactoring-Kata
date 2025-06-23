@@ -70,3 +70,45 @@ Die komplexen if-Bedingungen im Originalcode erforderten präzise Testdaten, um 
 **Seiteneffekte:**
 Die Methode updateQuality() ändert Zustände – Tests müssen vor/nach Zustand prüfen.
 -> Lösung: Klare Arrange-Act-Assert-Struktur in jedem Test.
+
+
+2. Refactoring 
+Die monolithische updateQuality()-Logik wurde modularisiert, ohne externes Verhalten zu ändern.
+
+
+**Neue Projektstruktur**
+src/main/java/com/gildedrose/
+├── Item.java                   # Datenmodell (unverändert)
+├── ItemUpdater.java            # Strategie-Interface
+├── AgedBrieUpdater.java        # Handhabt "Aged Brie"
+├── BackstagePassUpdater.java   # Handhabt "Backstage passes..."
+├── SulfurasUpdater.java        # Handhabt "Sulfuras..." (no-op)
+├── NormalItemUpdater.java      # Handhabt alle anderen Items
+├── ItemUpdaterFactory.java     # Factory zur Auswahl des Updaters
+└── GildedRose.java             # Delegiert Update-Aufrufe via Factory
+
+src/test/java/com/gildedrose/
+└── GildedRoseTest.java         # Originaltests (unverändert)
+
+**Refactoring-Schritte**
+
+Strategy-Pattern einführen
+Extraktion des ItemUpdater-Interfaces, das die update(Item)-Methode definiert.
+
+Dedizierte Updater-Klassen erstellen
+Für Aged Brie, Backstage passes, Sulfuras und normale Items.
+
+Factory implementieren
+ItemUpdaterFactory ordnet item.name einem Updater zu.
+
+GildedRose vereinfachen
+Schleife über Items + ItemUpdaterFactory.getUpdater(item).update(item).
+
+Verhalten validieren
+Sicherstellen, dass alle Qualitäts- und sellIn-Regeln (0–50, doppelte Effekte) übereinstimmen.
+
+### Herausforderungen
+
+**Verschachtelte Logik:**
+Die vielen if-Bedingungen erforderten genaue Nachbildung im Refactoring.
+-> Lösung: Schrittweise Extraktion und sofortige Testläufe.
